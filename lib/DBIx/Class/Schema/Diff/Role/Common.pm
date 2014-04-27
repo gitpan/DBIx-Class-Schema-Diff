@@ -8,7 +8,7 @@ use Types::Standard qw(:all);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 use Array::Diff;
-use JSON qw(decode_json);
+use JSON::DWIW;
 use Path::Class qw(file);
 
 sub _types_list { qw(
@@ -148,11 +148,11 @@ sub _coerce_schema_data {
       return $v;
     }
     elsif($rt eq 'HASH') {
-      return DBIx::Class::Schema::Diff::SchemaData->new( data => $v );
+      return DBIx::Class::Schema::Diff::SchemaData->new({ data => $v });
     }
     else {
       # Assume all other ref types  are schema instances:
-      return DBIx::Class::Schema::Diff::SchemaData->new( schema => $v );
+      return DBIx::Class::Schema::Diff::SchemaData->new({ schema => $v });
     }
   }
   else {
@@ -160,11 +160,11 @@ sub _coerce_schema_data {
       my $file = file($v)->absolute;
       if(-f $file) {
         # Assume it is a json file and try to decode it:
-        my $data = decode_json($file->slurp);
-        return DBIx::Class::Schema::Diff::SchemaData->new( data => $data );
+        my $data = JSON::DWIW::deserialize_file($file);
+        return DBIx::Class::Schema::Diff::SchemaData->new({ data => $data });
       }
     }
-    return DBIx::Class::Schema::Diff::SchemaData->new( schema => $v );
+    return DBIx::Class::Schema::Diff::SchemaData->new({ schema => $v });
   }
 }
 
